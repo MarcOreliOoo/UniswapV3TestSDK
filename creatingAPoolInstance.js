@@ -2,7 +2,7 @@ const ethers = require('ethers');
 const Pool = require("@uniswap/v3-sdk");
 const Token = require("@uniswap/sdk-core");
 const IUniswapV3PoolABI = require("@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json");
-const abi  = [IUniswapV3PoolABI];
+const abi  = IUniswapV3PoolABI.abi;
 require('dotenv').config();
 
 
@@ -26,7 +26,6 @@ const provider = new ethers.providers.JsonRpcProvider(rpcURL);
 //V3 pool we're trying to query
 const poolAddress = "0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8";
 
-console.log(typeof(IUniswapV3PoolABI));
 //new instance of a "Contract" using ethers.js.
 //This isn't a smart contract itself, but rather a local model of one that helps us move data around off-chain
 const poolContract = new ethers.Contract(
@@ -88,7 +87,7 @@ async function getPoolState() {
 }
 
 getPoolImmutables().then((result) => {
-	console.log("ok");
+	console.log(result);
 });
 
 getPoolState().then((result) => {
