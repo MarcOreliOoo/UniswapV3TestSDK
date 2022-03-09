@@ -1,6 +1,6 @@
 const ethers = require('ethers');
-const Pool = require("@uniswap/v3-sdk");
-const Token = require("@uniswap/sdk-core");
+const { Pool } = require("@uniswap/v3-sdk");
+const { Token }  = require("@uniswap/sdk-core");
 const IUniswapV3PoolABI = require("@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json");
 const abi  = IUniswapV3PoolABI.abi;
 require('dotenv').config();
@@ -60,36 +60,101 @@ interface State {
 }
 */
 
-
 /**
  * #3 : Fetching Immutable Data and State Data
  *  
  */
 //Query EVM and return Chain Data
-async function getPoolImmutables() {
-	return [factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick] = await Promise.all([
-      	poolContract.factory(),
+async function getPoolImmutables() {	
+	/*const [factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick] = await Promise.all([
+		poolContract.factory(),
 		poolContract.token0(),
 		poolContract.token1(),
 		poolContract.fee(),
 		poolContract.tickSpacing(),
 		poolContract.maxLiquidityPerTick(),
-    ]);
+	]);
+	
+	let immutables = [factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick].reduce((a, v) => ({ ...a, [a]: v}), { factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick });
+	*/
+
+	const myTab = await Promise.all([
+		poolContract.factory(),
+		poolContract.token0(),
+		poolContract.token1(),
+		poolContract.fee(),
+		poolContract.tickSpacing(),
+		poolContract.maxLiquidityPerTick(),
+	]);
+	
+	let immutables = {};
+	immutables.factory = myTab[0];
+	immutables.token0 = myTab[1];
+	immutables.token1 = myTab[2];
+	immutables.fee = myTab[3];
+	immutables.tickSpacing = myTab[4];
+	immutables.maxLiquidityPerTick = myTab[5];
+	
+	//console.log(immutables);
+
+	return immutables;
 }
 
+//Return the state of the pool
 async function getPoolState() {
 	const [liquidity, slot] = await Promise.all([
 		poolContract.liquidity(),
-		poolContract.slot0(),
+		poolContract.slot0()
 	]);
+	
+	let aState = {}
+	aState.liquidity = liquidity;
+	aState.sqrtPriceX96 = slot.sqrtPriceX96;
+	aState.tick = slot.tick;
+	aState.observationIndex = slot.observationIndex;
+	aState.observationCardinality = slot.observationCardinality;
+	aState.observationCardinalityNext = slot.observationCardinalityNext;
+	aState.feeProtocol = slot.feeProtocol;
+	aState.unlocked = slot.unlocked;
+	
+	//dconsole.log(aState);
 
-	return [liquidity,slot[0],slot[1],slot[2],slot[3],slot[4],slot[5],slot[6]];
+	return aState;
 }
 
-getPoolImmutables().then((result) => {
+
+/**
+ * #4 : 
+ */
+async function main() {
+	const [immutables, state] = await Promise.all([
+		getPoolImmutables(),
+		getPoolState(),
+	]);
+
+	//'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+	const TokenA = new Token(3, immutables.token0, 6, "USDC", "USD Coin");
+	//'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+	const TokenB = new Token(3, immutables.token1, 18, "WETH", "Wrapped Ether");
+
+	const poolExample = new Pool(
+		TokenA,
+		TokenB,
+		immutables.fee,
+		state.sqrtPriceX96.toString(),
+		state.liquidity.toString(),
+		state.tick
+	);
+	
+	console.log(poolExample);
+}
+  
+main();
+
+/* getPoolImmutables().then((result) => {
 	console.log(result);
 });
 
 getPoolState().then((result) => {
 	console.log(result);
-})
+}) */
