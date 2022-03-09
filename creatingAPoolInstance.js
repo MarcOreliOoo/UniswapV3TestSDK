@@ -61,12 +61,13 @@ interface State {
 */
 
 /**
- * #3 : Fetching Immutable Data and State Data
- *  
+ * #3 : Fetching Immutable Data and State Data 
  */
+
 //Query EVM and return Chain Data
 async function getPoolImmutables() {	
-	/*const [factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick] = await Promise.all([
+	/*
+	const [factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick] = await Promise.all([
 		poolContract.factory(),
 		poolContract.token0(),
 		poolContract.token1(),
@@ -74,7 +75,6 @@ async function getPoolImmutables() {
 		poolContract.tickSpacing(),
 		poolContract.maxLiquidityPerTick(),
 	]);
-	
 	let immutables = [factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick].reduce((a, v) => ({ ...a, [a]: v}), { factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick });
 	*/
 
@@ -95,8 +95,6 @@ async function getPoolImmutables() {
 	immutables.tickSpacing = myTab[4];
 	immutables.maxLiquidityPerTick = myTab[5];
 	
-	//console.log(immutables);
-
 	return immutables;
 }
 
@@ -116,15 +114,13 @@ async function getPoolState() {
 	aState.observationCardinalityNext = slot.observationCardinalityNext;
 	aState.feeProtocol = slot.feeProtocol;
 	aState.unlocked = slot.unlocked;
-	
-	//dconsole.log(aState);
 
 	return aState;
 }
 
 
 /**
- * #4 : 
+ * #4 : Construction of the two token and the pool instance
  */
 async function main() {
 	const [immutables, state] = await Promise.all([
@@ -132,9 +128,7 @@ async function main() {
 		getPoolState(),
 	]);
 
-	//'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
 	const TokenA = new Token(3, immutables.token0, 6, "USDC", "USD Coin");
-	//'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 	const TokenB = new Token(3, immutables.token1, 18, "WETH", "Wrapped Ether");
 
 	const poolExample = new Pool(
@@ -150,11 +144,3 @@ async function main() {
 }
   
 main();
-
-/* getPoolImmutables().then((result) => {
-	console.log(result);
-});
-
-getPoolState().then((result) => {
-	console.log(result);
-}) */
