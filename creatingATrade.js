@@ -1,8 +1,8 @@
 const ethers = require('ethers');
 const { Pool } = require("@uniswap/v3-sdk");
 const { Route } = require("@uniswap/v3-sdk");
-const { CurrencyAmount } = require("@uniswap/v3-sdk");
-const { TradeType } = require("@uniswap/v3-sdk");
+const { CurrencyAmount } = require("@uniswap/sdk-core");
+const { TradeType } = require("@uniswap/sdk-core");
 const { Trade } = require("@uniswap/v3-sdk");
 const { Token }  = require("@uniswap/sdk-core");
 
@@ -18,16 +18,14 @@ const rpcURL = `https://mainnet.infura.io/v3/${process.env.DB_INFURANODE}`;
 const privateKey = Buffer.from(process.env.DB_PRIVKEY0, 'hex');
 const provider = new ethers.providers.JsonRpcProvider(rpcURL);
 
-console.log(CurrencyAmount);
-
 /**
  * We're using the pool object to quote an estimated amount out for a trade, then creates a trade object that can be used to execute a swap.
  * More information in the documentation : https://docs.uniswap.org/sdk/guides/creating-a-trade
  */
 
-//////////////
-// I. Creation a pool
-//////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////// I. Creation a pool //////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // V3 pool we're trying to query
@@ -92,10 +90,10 @@ async function getPoolState() {
 }
 
 
-//////////////
-// II. Creation a quoter
-//////////////
-
+//////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// II. Creation a quoter /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+ 
 // From doc : "The quoter is a smart contract that retrieves estimated output or input amounts for a given swap type.
 // This example creates an object in our javascript environment that models the quoter interface, which can be called to return a swap quote.
 
@@ -151,17 +149,15 @@ async function main() {
 		state.liquidity.toString(),
 		state.tick
 	);
+	console.log("The poolExample is", poolExample);
 
 	// call the quoter contract to determine the amount out of a swap, given an amount in
 	const quotedAmountOut = await getQuoteExactInputSingle(immutables);
-	//console.log(quotedAmountOut);
 
 	// create an instance of the route object in order to construct a trade object
 	const swapRoute = new Route([poolExample], TokenA, TokenB);
-	//console.log(swapRoute);
 
 	// with the Route created, we want to create an unchecked trade instance
-
 	/**
 	 * Creates a trade without computing the result of swapping through the route. Useful when you have simulated the trade
 	 * elsewhere and do not have any tick data
@@ -171,8 +167,6 @@ async function main() {
 	 * @param constructorArguments The arguments passed to the trade constructor
 	 * @returns The unchecked trade
 	*/
-
-	
 	const uncheckedTradeExample = await Trade.createUncheckedTrade({
 		route: swapRoute,
 		inputAmount: CurrencyAmount.fromRawAmount(TokenA, amountIn.toString()),
@@ -183,7 +177,6 @@ async function main() {
 		tradeType: TradeType.EXACT_INPUT,
 	});
 
-	// print the quote and the unchecked trade instance in the console
 	console.log("The quoted amount out is", quotedAmountOut.toString());
 	console.log("The unchecked trade object is", uncheckedTradeExample);
 
